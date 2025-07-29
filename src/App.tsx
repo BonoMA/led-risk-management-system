@@ -12,6 +12,7 @@ import DataManagement from './components/DataManagement';
 import UserManagement from './components/UserManagement';
 import BusinessUnitManagement from './components/BusinessUnitManagement';
 import UserRegistrationForm from './components/UserRegistration';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,52 +52,57 @@ const MainLayout: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // 获取basename，在GitHub Pages上使用仓库名作为basename
+  const basename = process.env.NODE_ENV === 'production' ? '/led-risk-management-system' : '';
+
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<UserRegistrationForm />} />
-          
-          {/* 主应用路由 */}
-          <Route path="/" element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router basename={basename}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<UserRegistrationForm />} />
             
-            {/* LED模块 - 二级菜单 */}
-            <Route path="led">
-              <Route path="incidents" element={<IncidentList />} />
-              <Route path="incidents/new" element={<NewIncident />} />
-              <Route path="incidents/edit/:id" element={<EditIncident />} />
-              <Route path="iam" element={<IAMManagement />} />
+            {/* 主应用路由 */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              
+              {/* LED模块 - 二级菜单 */}
+              <Route path="led">
+                <Route path="incidents" element={<IncidentList />} />
+                <Route path="incidents/new" element={<NewIncident />} />
+                <Route path="incidents/edit/:id" element={<EditIncident />} />
+                <Route path="iam" element={<IAMManagement />} />
+              </Route>
+              
+              {/* 管理功能 - 仅管理员 */}
+              <Route path="admin">
+                <Route path="users" element={
+                  <AdminRoute>
+                    <UserManagement />
+                  </AdminRoute>
+                } />
+                <Route path="business-units" element={
+                  <AdminRoute>
+                    <BusinessUnitManagement />
+                  </AdminRoute>
+                } />
+                <Route path="data" element={
+                  <AdminRoute>
+                    <DataManagement />
+                  </AdminRoute>
+                } />
+              </Route>
             </Route>
-            
-            {/* 管理功能 - 仅管理员 */}
-            <Route path="admin">
-              <Route path="users" element={
-                <AdminRoute>
-                  <UserManagement />
-                </AdminRoute>
-              } />
-              <Route path="business-units" element={
-                <AdminRoute>
-                  <BusinessUnitManagement />
-                </AdminRoute>
-              } />
-              <Route path="data" element={
-                <AdminRoute>
-                  <DataManagement />
-                </AdminRoute>
-              } />
-            </Route>
-          </Route>
-        </Routes>
-      </Router>
-    </AuthProvider>
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -28,7 +28,14 @@ const Login: React.FC = () => {
 
       if (user) {
         if (user.isActive) {
-          login(employeeId);
+          const loginSuccess = login(employeeId);
+          if (loginSuccess) {
+            navigate('/dashboard');
+          } else {
+            setErrorMessage('登录失败，请重试');
+            setShowError(true);
+            setTimeout(() => setShowError(false), 3000);
+          }
         } else {
           setErrorMessage('您的账户已被禁用，请联系管理员');
           setShowError(true);
@@ -61,7 +68,14 @@ const Login: React.FC = () => {
 
   const handleDemoLogin = (demoId: string) => {
     setEmployeeId(demoId);
-    login(demoId);
+    const loginSuccess = login(demoId);
+    if (loginSuccess) {
+      navigate('/dashboard');
+    } else {
+      setErrorMessage('演示用户登录失败，请重试');
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000);
+    }
   };
 
   return (
@@ -73,7 +87,7 @@ const Login: React.FC = () => {
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          登录 LED 风险管理系统
+          登录 全面风险管理系统
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           请输入您的员工ID进行登录
@@ -157,16 +171,24 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              还没有账户？{' '}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">新用户</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
               <button
                 onClick={() => navigate('/register')}
-                className="font-medium text-primary-600 hover:text-primary-500"
+                className="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
               >
                 申请注册
               </button>
-            </p>
+            </div>
           </div>
         </div>
       </div>

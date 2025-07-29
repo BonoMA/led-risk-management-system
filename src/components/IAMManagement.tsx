@@ -7,35 +7,30 @@ import {
   Edit, 
   Trash2, 
   CheckCircle, 
+  XCircle,
   Clock,
   AlertTriangle,
-  User,
-  Calendar,
-  XCircle
+  Calendar
 } from 'lucide-react';
 
 const IAMManagement: React.FC = () => {
   const { currentUser } = useAuth();
   const [iamItems, setIAMItems] = useState<IAMItem[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [selectedItem, setSelectedItem] = useState<IAMItem | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<IAMItem | null>(null);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
 
   useEffect(() => {
-    // 从存储服务加载数据
     const loadedIAMItems = storageService.getIAMItems();
     const loadedIncidents = storageService.getIncidents();
     setIAMItems(loadedIAMItems);
     setIncidents(loadedIncidents);
   }, []);
 
-  // 获取开放的事件
-  const openIncidents = incidents.filter(incident => incident.status === 'Open');
-
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'Pending': { color: 'bg-gray-100 text-gray-800', text: '待处理' },
+      'Pending': { color: 'bg-yellow-100 text-yellow-800', text: '待处理' },
       'In Progress': { color: 'bg-blue-100 text-blue-800', text: '进行中' },
       'Completed': { color: 'bg-green-100 text-green-800', text: '已完成' },
       'Overdue': { color: 'bg-red-100 text-red-800', text: '已逾期' }
@@ -78,14 +73,13 @@ const IAMManagement: React.FC = () => {
     if (formMode === 'create') {
       const newItem: IAMItem = {
         id: Date.now().toString(),
-        incidentId: formData.incidentId || '',
-        issue: formData.issue || '',
-        rootCause: formData.rootCause || '',
-        actionPlan: formData.actionPlan || '',
-        targetDate: formData.targetDate || '',
-        pic: formData.pic || '',
+        title: formData.title || '',
+        description: formData.description || '',
+        assignedTo: formData.assignedTo || '',
+        dueDate: formData.dueDate || '',
         status: 'Pending',
-        progress: 0,
+        priority: formData.priority || 'Medium',
+        relatedIncidentId: formData.relatedIncidentId || '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -186,7 +180,7 @@ const IAMManagement: React.FC = () => {
       <div className="card">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">
-            IAM 项目列表 ({iamItems.length})
+            IAM项目列表 ({iamItems.length})
           </h3>
         </div>
         <div className="overflow-x-auto">
@@ -194,25 +188,25 @@ const IAMManagement: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  问题
+                  序号
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  根本原因
+                  标题
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  行动计划
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  目标日期
+                  描述
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   负责人
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  截止日期
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   状态
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  进度
+                  优先级
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   操作
@@ -220,41 +214,34 @@ const IAMManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {iamItems.map((item) => (
+              {iamItems.map((item, index) => (
                 <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {index + 1}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {item.issue}
+                    {item.title}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.rootCause}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="max-w-xs truncate">
-                      {item.actionPlan}
-                    </div>
+                    {item.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(item.targetDate).toLocaleDateString('zh-CN')}
+                    {item.assignedTo}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <User size={16} className="mr-1" />
-                      {item.pic}
-                    </div>
+                    {new Date(item.dueDate).toLocaleDateString('zh-CN')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(item.status)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                        <div 
-                          className={`h-2 rounded-full ${getProgressColor(item.progress)}`}
-                          style={{ width: `${item.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-900">{item.progress}%</span>
-                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      item.priority === 'High' ? 'bg-red-100 text-red-800' :
+                      item.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {item.priority === 'High' ? '高' : item.priority === 'Medium' ? '中' : '低'}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
@@ -283,37 +270,18 @@ const IAMManagement: React.FC = () => {
 
       {/* IAM表单模态框 */}
       {showForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  {formMode === 'create' ? '新建IAM项目' : '编辑IAM项目'}
-                </h3>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <XCircle size={24} />
-                </button>
-              </div>
-              
-              <IAMForm
-                item={selectedItem}
-                mode={formMode}
-                onSubmit={handleSubmit}
-                onCancel={() => setShowForm(false)}
-                openIncidents={openIncidents}
-              />
-            </div>
-          </div>
-        </div>
+        <IAMForm
+          item={selectedItem}
+          mode={formMode}
+          onSubmit={handleSubmit}
+          onCancel={() => setShowForm(false)}
+          openIncidents={incidents.filter(incident => incident.status === 'Open')}
+        />
       )}
     </div>
   );
 };
 
-// IAM表单组件
 interface IAMFormProps {
   item?: IAMItem | null;
   mode: 'create' | 'edit';
@@ -323,15 +291,14 @@ interface IAMFormProps {
 }
 
 const IAMForm: React.FC<IAMFormProps> = ({ item, mode, onSubmit, onCancel, openIncidents }) => {
-  const [formData, setFormData] = useState({
-    incidentId: item?.incidentId || '',
-    issue: item?.issue || '',
-    rootCause: item?.rootCause || '',
-    actionPlan: item?.actionPlan || '',
-    targetDate: item?.targetDate || '',
-    pic: item?.pic || '',
-    status: (item?.status || 'Pending') as 'Pending' | 'In Progress' | 'Completed' | 'Overdue',
-    progress: item?.progress || 0
+  const [formData, setFormData] = useState<Partial<IAMItem>>({
+    title: item?.title || '',
+    description: item?.description || '',
+    assignedTo: item?.assignedTo || '',
+    dueDate: item?.dueDate || '',
+    status: item?.status || 'Pending',
+    priority: item?.priority || 'Medium',
+    relatedIncidentId: item?.relatedIncidentId || ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -339,145 +306,131 @@ const IAMForm: React.FC<IAMFormProps> = ({ item, mode, onSubmit, onCancel, openI
     onSubmit(formData);
   };
 
+  const handleInputChange = (field: keyof IAMItem, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          关联事件
-        </label>
-        <select
-          className="form-select"
-          value={formData.incidentId}
-          onChange={(e) => setFormData(prev => ({ ...prev, incidentId: e.target.value }))}
-          required
-        >
-          <option value="">请选择事件</option>
-          {openIncidents.map(incident => (
-            <option key={incident.id} value={incident.id}>
-              {incident.incidentName}
-            </option>
-          ))}
-        </select>
-      </div>
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div className="mt-3">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              {mode === 'create' ? '新建IAM项目' : '编辑IAM项目'}
+            </h3>
+            <button
+              onClick={onCancel}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <XCircle size={24} />
+            </button>
+          </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          问题
-        </label>
-        <textarea
-          rows={3}
-          className="form-input"
-          value={formData.issue}
-          onChange={(e) => setFormData(prev => ({ ...prev, issue: e.target.value }))}
-          required
-        />
-      </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                标题 *
+              </label>
+              <input
+                type="text"
+                className="form-input"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                required
+              />
+            </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          根本原因
-        </label>
-        <textarea
-          rows={3}
-          className="form-input"
-          value={formData.rootCause}
-          onChange={(e) => setFormData(prev => ({ ...prev, rootCause: e.target.value }))}
-          required
-        />
-      </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                描述 *
+              </label>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                required
+              />
+            </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          行动计划
-        </label>
-        <textarea
-          rows={4}
-          className="form-input"
-          value={formData.actionPlan}
-          onChange={(e) => setFormData(prev => ({ ...prev, actionPlan: e.target.value }))}
-          required
-        />
-      </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                负责人 *
+              </label>
+              <input
+                type="text"
+                className="form-input"
+                value={formData.assignedTo}
+                onChange={(e) => handleInputChange('assignedTo', e.target.value)}
+                required
+              />
+            </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            目标日期
-          </label>
-          <input
-            type="date"
-            className="form-input"
-            value={formData.targetDate}
-            onChange={(e) => setFormData(prev => ({ ...prev, targetDate: e.target.value }))}
-            required
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                截止日期 *
+              </label>
+              <input
+                type="date"
+                className="form-input"
+                value={formData.dueDate}
+                onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                required
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            负责人
-          </label>
-          <input
-            type="text"
-            className="form-input"
-            value={formData.pic}
-            onChange={(e) => setFormData(prev => ({ ...prev, pic: e.target.value }))}
-            required
-          />
-        </div>
-      </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                优先级
+              </label>
+              <select
+                className="form-select"
+                value={formData.priority}
+                onChange={(e) => handleInputChange('priority', e.target.value)}
+              >
+                <option value="Low">低</option>
+                <option value="Medium">中</option>
+                <option value="High">高</option>
+              </select>
+            </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            状态
-          </label>
-          <select
-            className="form-select"
-            value={formData.status}
-            onChange={(e) => setFormData(prev => ({ 
-              ...prev, 
-              status: e.target.value as 'Pending' | 'In Progress' | 'Completed' | 'Overdue'
-            }))}
-          >
-            <option value="Pending">待处理</option>
-            <option value="In Progress">进行中</option>
-            <option value="Completed">已完成</option>
-            <option value="Overdue">已逾期</option>
-          </select>
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                关联事件
+              </label>
+              <select
+                className="form-select"
+                value={formData.relatedIncidentId}
+                onChange={(e) => handleInputChange('relatedIncidentId', e.target.value)}
+              >
+                <option value="">选择事件</option>
+                {openIncidents.map(incident => (
+                  <option key={incident.id} value={incident.id}>
+                    {incident.incidentName}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            进度 (%)
-          </label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            className="form-input"
-            value={formData.progress}
-            onChange={(e) => setFormData(prev => ({ ...prev, progress: parseInt(e.target.value) || 0 }))}
-          />
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="btn-secondary"
+              >
+                取消
+              </button>
+              <button
+                type="submit"
+                className="btn-primary"
+              >
+                {mode === 'create' ? '创建' : '保存'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-
-      <div className="flex justify-end space-x-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="btn-secondary"
-        >
-          取消
-        </button>
-        <button
-          type="submit"
-          className="btn-primary"
-        >
-          {mode === 'create' ? '创建' : '保存'}
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 

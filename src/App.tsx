@@ -53,7 +53,7 @@ const MainLayout: React.FC = () => {
 
 const App: React.FC = () => {
   // 获取basename，在GitHub Pages上使用仓库名作为basename
-  const basename = process.env.NODE_ENV === 'production' ? '/led-risk-management-system' : '';
+  const basename = import.meta.env.PROD ? '/led-risk-management-system' : '';
 
   return (
     <ErrorBoundary>

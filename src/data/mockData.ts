@@ -1,10 +1,42 @@
 import { User, Incident, IAMItem, BusinessUnit } from '../types';
 
 export const businessUnits: BusinessUnit[] = [
-  { id: '1', name: 'Risk Management', code: 'RM' },
-  { id: '2', name: 'IT & Digital', code: 'ITD' },
-  { id: '3', name: 'Compliance', code: 'COMP' },
-  { id: '4', name: 'Procurement', code: 'PROC' }
+  { 
+    id: '1', 
+    name: 'Risk Management', 
+    code: 'RM',
+    description: '风险管理业务单位',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  },
+  { 
+    id: '2', 
+    name: 'IT & Digital', 
+    code: 'ITD',
+    description: 'IT与数字化业务单位',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  },
+  { 
+    id: '3', 
+    name: 'Compliance', 
+    code: 'COMP',
+    description: '合规业务单位',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  },
+  { 
+    id: '4', 
+    name: 'Procurement', 
+    code: 'PROC',
+    description: '采购业务单位',
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: '2024-01-01T00:00:00.000Z'
+  }
 ];
 
 export const mockUsers: User[] = [

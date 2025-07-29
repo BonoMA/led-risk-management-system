@@ -378,11 +378,6 @@ const UserManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">申请理由</label>
-                  <p className="mt-1 text-sm text-gray-900">{selectedRegistration.reason}</p>
-                </div>
-
-                <div>
                   <label className="block text-sm font-medium text-gray-700">审批意见</label>
                   <textarea
                     rows={3}

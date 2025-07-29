@@ -1,9 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './components/Login';
-import UserRegistrationForm from './components/UserRegistration';
 import Dashboard from './components/Dashboard';
 import IncidentList from './components/IncidentList';
 import NewIncident from './components/NewIncident';
@@ -11,103 +10,93 @@ import EditIncident from './components/EditIncident';
 import IAMManagement from './components/IAMManagement';
 import DataManagement from './components/DataManagement';
 import UserManagement from './components/UserManagement';
+import BusinessUnitManagement from './components/BusinessUnitManagement';
+import UserRegistrationForm from './components/UserRegistration';
 
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  return <>{children}</>;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
-// 管理员专用路由组件
+// 管理员路由组件
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, currentUser } = useAuth();
+  const { currentUser, isAuthenticated } = useAuth();
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   
   if (currentUser?.role !== 'Administrator') {
-    return <Navigate to="/" replace />;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">权限不足</h3>
+          <p className="text-gray-500">只有管理员可以访问此页面</p>
+        </div>
+      </div>
+    );
   }
   
   return <>{children}</>;
 };
 
-// 主应用内容
-const AppContent: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-
+// 主布局组件
+const MainLayout: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
-      <Route path="/register" element={<UserRegistrationForm />} />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout>
-            <Dashboard />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/incidents" element={
-        <ProtectedRoute>
-          <Layout>
-            <IncidentList />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/incidents/new" element={
-        <ProtectedRoute>
-          <Layout>
-            <NewIncident />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/incidents/edit/:id" element={
-        <ProtectedRoute>
-          <Layout>
-            <EditIncident />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/iam" element={
-        <ProtectedRoute>
-          <Layout>
-            <IAMManagement />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/data" element={
-        <ProtectedRoute>
-          <Layout>
-            <DataManagement />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/users" element={
-        <AdminRoute>
-          <Layout>
-            <UserManagement />
-          </Layout>
-        </AdminRoute>
-      } />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Layout>
+      <Outlet />
+    </Layout>
   );
 };
 
-// 主应用组件
 const App: React.FC = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<UserRegistrationForm />} />
+          
+          {/* 主应用路由 */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            
+            {/* LED模块 - 二级菜单 */}
+            <Route path="led">
+              <Route path="incidents" element={<IncidentList />} />
+              <Route path="incidents/new" element={<NewIncident />} />
+              <Route path="incidents/edit/:id" element={<EditIncident />} />
+              <Route path="iam" element={<IAMManagement />} />
+            </Route>
+            
+            {/* 管理功能 - 仅管理员 */}
+            <Route path="admin">
+              <Route path="users" element={
+                <AdminRoute>
+                  <UserManagement />
+                </AdminRoute>
+              } />
+              <Route path="business-units" element={
+                <AdminRoute>
+                  <BusinessUnitManagement />
+                </AdminRoute>
+              } />
+              <Route path="data" element={
+                <AdminRoute>
+                  <DataManagement />
+                </AdminRoute>
+              } />
+            </Route>
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 

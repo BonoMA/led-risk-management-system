@@ -1,15 +1,20 @@
-import { Incident, IAMItem, User, UserRegistration } from '../types';
-import { mockIncidents, mockIAMItems } from '../data/mockData';
+import { Incident, IAMItem, User, UserRegistration, BusinessUnit } from '../types';
+import { mockIncidents, mockIAMItems, mockUsers, businessUnits } from '../data/mockData';
 
 class StorageService {
-  // 事件相关方法
+  // Incident related methods
   getIncidents(): Incident[] {
-    const stored = localStorage.getItem('led_incidents');
-    return stored ? JSON.parse(stored) : [];
+    const stored = localStorage.getItem('incidents');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // 初始化时加载模拟数据
+    localStorage.setItem('incidents', JSON.stringify(mockIncidents));
+    return mockIncidents;
   }
 
   saveIncidents(incidents: Incident[]): void {
-    localStorage.setItem('led_incidents', JSON.stringify(incidents));
+    localStorage.setItem('incidents', JSON.stringify(incidents));
   }
 
   addIncident(incident: Incident): void {
@@ -20,7 +25,7 @@ class StorageService {
 
   updateIncident(updatedIncident: Incident): void {
     const incidents = this.getIncidents();
-    const index = incidents.findIndex(inc => inc.id === updatedIncident.id);
+    const index = incidents.findIndex(i => i.id === updatedIncident.id);
     if (index !== -1) {
       incidents[index] = updatedIncident;
       this.saveIncidents(incidents);
@@ -29,18 +34,23 @@ class StorageService {
 
   deleteIncident(incidentId: string): void {
     const incidents = this.getIncidents();
-    const filtered = incidents.filter(inc => inc.id !== incidentId);
+    const filtered = incidents.filter(i => i.id !== incidentId);
     this.saveIncidents(filtered);
   }
 
-  // IAM项目相关方法
+  // IAM Item related methods
   getIAMItems(): IAMItem[] {
-    const stored = localStorage.getItem('led_iam_items');
-    return stored ? JSON.parse(stored) : [];
+    const stored = localStorage.getItem('iamItems');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // 初始化时加载模拟数据
+    localStorage.setItem('iamItems', JSON.stringify(mockIAMItems));
+    return mockIAMItems;
   }
 
   saveIAMItems(items: IAMItem[]): void {
-    localStorage.setItem('led_iam_items', JSON.stringify(items));
+    localStorage.setItem('iamItems', JSON.stringify(items));
   }
 
   addIAMItem(item: IAMItem): void {
@@ -51,7 +61,7 @@ class StorageService {
 
   updateIAMItem(updatedItem: IAMItem): void {
     const items = this.getIAMItems();
-    const index = items.findIndex(item => item.id === updatedItem.id);
+    const index = items.findIndex(i => i.id === updatedItem.id);
     if (index !== -1) {
       items[index] = updatedItem;
       this.saveIAMItems(items);
@@ -60,18 +70,23 @@ class StorageService {
 
   deleteIAMItem(itemId: string): void {
     const items = this.getIAMItems();
-    const filtered = items.filter(item => item.id !== itemId);
+    const filtered = items.filter(i => i.id !== itemId);
     this.saveIAMItems(filtered);
   }
 
-  // 用户相关方法
+  // User related methods
   getUsers(): User[] {
-    const stored = localStorage.getItem('led_users');
-    return stored ? JSON.parse(stored) : [];
+    const stored = localStorage.getItem('users');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // 初始化时加载模拟数据
+    localStorage.setItem('users', JSON.stringify(mockUsers));
+    return mockUsers;
   }
 
   saveUsers(users: User[]): void {
-    localStorage.setItem('led_users', JSON.stringify(users));
+    localStorage.setItem('users', JSON.stringify(users));
   }
 
   addUser(user: User): void {
@@ -82,7 +97,7 @@ class StorageService {
 
   updateUser(updatedUser: User): void {
     const users = this.getUsers();
-    const index = users.findIndex(user => user.id === updatedUser.id);
+    const index = users.findIndex(u => u.id === updatedUser.id);
     if (index !== -1) {
       users[index] = updatedUser;
       this.saveUsers(users);
@@ -91,18 +106,21 @@ class StorageService {
 
   deleteUser(userId: string): void {
     const users = this.getUsers();
-    const filtered = users.filter(user => user.id !== userId);
+    const filtered = users.filter(u => u.id !== userId);
     this.saveUsers(filtered);
   }
 
-  // 用户注册申请相关方法
+  // User Registration related methods
   getUserRegistrations(): UserRegistration[] {
-    const stored = localStorage.getItem('led_user_registrations');
-    return stored ? JSON.parse(stored) : [];
+    const stored = localStorage.getItem('userRegistrations');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return [];
   }
 
   saveUserRegistrations(registrations: UserRegistration[]): void {
-    localStorage.setItem('led_user_registrations', JSON.stringify(registrations));
+    localStorage.setItem('userRegistrations', JSON.stringify(registrations));
   }
 
   addUserRegistration(registration: UserRegistration): void {
@@ -113,7 +131,7 @@ class StorageService {
 
   updateUserRegistration(updatedRegistration: UserRegistration): void {
     const registrations = this.getUserRegistrations();
-    const index = registrations.findIndex(reg => reg.id === updatedRegistration.id);
+    const index = registrations.findIndex(r => r.id === updatedRegistration.id);
     if (index !== -1) {
       registrations[index] = updatedRegistration;
       this.saveUserRegistrations(registrations);
@@ -122,18 +140,64 @@ class StorageService {
 
   deleteUserRegistration(registrationId: string): void {
     const registrations = this.getUserRegistrations();
-    const filtered = registrations.filter(reg => reg.id !== registrationId);
+    const filtered = registrations.filter(r => r.id !== registrationId);
     this.saveUserRegistrations(filtered);
   }
 
-  // 数据管理方法
+  // Business Unit related methods
+  getBusinessUnits(): BusinessUnit[] {
+    const stored = localStorage.getItem('businessUnits');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // 初始化时加载模拟数据，转换为新的BusinessUnit格式
+    const initialBusinessUnits: BusinessUnit[] = businessUnits.map(unit => ({
+      id: unit.id,
+      name: unit.name,
+      code: unit.code,
+      description: '',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
+    localStorage.setItem('businessUnits', JSON.stringify(initialBusinessUnits));
+    return initialBusinessUnits;
+  }
+
+  saveBusinessUnits(units: BusinessUnit[]): void {
+    localStorage.setItem('businessUnits', JSON.stringify(units));
+  }
+
+  addBusinessUnit(unit: BusinessUnit): void {
+    const units = this.getBusinessUnits();
+    units.push(unit);
+    this.saveBusinessUnits(units);
+  }
+
+  updateBusinessUnit(updatedUnit: BusinessUnit): void {
+    const units = this.getBusinessUnits();
+    const index = units.findIndex(u => u.id === updatedUnit.id);
+    if (index !== -1) {
+      units[index] = updatedUnit;
+      this.saveBusinessUnits(units);
+    }
+  }
+
+  deleteBusinessUnit(unitId: string): void {
+    const units = this.getBusinessUnits();
+    const filtered = units.filter(u => u.id !== unitId);
+    this.saveBusinessUnits(filtered);
+  }
+
+  // Data management methods
   clearAllData(): void {
-    localStorage.removeItem('led_incidents');
-    localStorage.removeItem('led_iam_items');
-    localStorage.removeItem('led_users');
-    localStorage.removeItem('led_user_registrations');
-    localStorage.removeItem('led_current_user');
-    localStorage.removeItem('led_is_authenticated');
+    localStorage.removeItem('incidents');
+    localStorage.removeItem('iamItems');
+    localStorage.removeItem('users');
+    localStorage.removeItem('userRegistrations');
+    localStorage.removeItem('businessUnits');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isAuthenticated');
   }
 
   exportData(): string {
@@ -142,6 +206,7 @@ class StorageService {
       iamItems: this.getIAMItems(),
       users: this.getUsers(),
       userRegistrations: this.getUserRegistrations(),
+      businessUnits: this.getBusinessUnits(),
       exportDate: new Date().toISOString()
     };
     return JSON.stringify(data, null, 2);
@@ -150,10 +215,13 @@ class StorageService {
   importData(jsonData: string): boolean {
     try {
       const data = JSON.parse(jsonData);
+      
       if (data.incidents) this.saveIncidents(data.incidents);
       if (data.iamItems) this.saveIAMItems(data.iamItems);
       if (data.users) this.saveUsers(data.users);
       if (data.userRegistrations) this.saveUserRegistrations(data.userRegistrations);
+      if (data.businessUnits) this.saveBusinessUnits(data.businessUnits);
+      
       return true;
     } catch (error) {
       console.error('导入数据失败:', error);

@@ -12,24 +12,6 @@ export interface User {
   updatedAt: string;
 }
 
-export interface UserRegistration {
-  id: string;
-  name: string;
-  employeeId: string;
-  position: string;
-  department: string;
-  requestedRole: 'Inputter' | 'Approver' | 'Administrator';
-  email: string;
-  phone: string;
-  reason: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  reviewedBy?: string;
-  reviewedAt?: string;
-  reviewComment?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Incident {
   id: string;
   incidentName: string;
@@ -70,15 +52,50 @@ export interface BusinessUnit {
   id: string;
   name: string;
   code: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserRegistration {
+  id: string;
+  name: string;
+  employeeId: string;
+  email: string;
+  phone: string;
+  position: string;
+  department: string;
+  requestedRole: 'Inputter' | 'Approver' | 'Administrator';
+  status: 'Pending' | 'Approved' | 'Rejected';
+  reviewComment?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DashboardStats {
   totalIncidents: number;
   openIncidents: number;
   closedIncidents: number;
-  pendingApprovals: number;
   totalLoss: number;
-  averageLoss: number;
+  totalRecovery: number;
+  actualLoss: number;
   incidentsByMonth: Record<string, number>;
   incidentsByCause: Record<string, number>;
+}
+
+// 国际化相关类型
+export interface Language {
+  code: 'zh' | 'en';
+  name: string;
+  flag: string;
+}
+
+export interface Translation {
+  [key: string]: {
+    zh: string;
+    en: string;
+  };
 } 

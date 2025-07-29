@@ -5,8 +5,8 @@ export interface User {
   position: string;
   department: string;
   role: 'Inputter' | 'Approver' | 'Administrator';
-  email?: string;
-  phone?: string;
+  email: string;
+  phone: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -35,21 +35,14 @@ export interface Incident {
   incidentName: string;
   incidentDate: string;
   discoveryDate: string;
-  keyProcess: string;
-  incidentDescription: string;
-  rootCause: string;
+  businessUnit: string;
   potentialLoss: number;
   recovery: number;
   actualLoss: number;
   recoverySource: string;
-  causeOfAccident: 'People' | 'Process' | 'System' | 'External Factors';
-  causeOfAccidentDescription: string;
-  involvedParties: 'Internal' | 'External' | 'Both';
-  riskMitigation: string;
-  actionPlan: string;
+  causeOfAccident: string;
   status: 'Open' | 'Closed';
   reviewStatus: 'Draft' | 'Pending Approval L1' | 'Pending Approval L2' | 'Approved' | 'Rejected';
-  businessUnit: string;
   attachment?: File;
   createdBy: {
     name: string;
@@ -62,21 +55,21 @@ export interface Incident {
 
 export interface IAMItem {
   id: string;
-  incidentId: string;
-  issue: string;
-  rootCause: string;
-  actionPlan: string;
-  targetDate: string;
-  pic: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  dueDate: string;
   status: 'Pending' | 'In Progress' | 'Completed' | 'Overdue';
-  progress: number;
+  priority: 'Low' | 'Medium' | 'High';
+  relatedIncidentId: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface BusinessUnit {
-  value: string;
-  label: string;
+  id: string;
+  name: string;
+  code: string;
 }
 
 export interface DashboardStats {

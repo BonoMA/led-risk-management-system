@@ -1,15 +1,109 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { User } from '../types';
-import { mockUsers } from '../data/mockData';
 
 interface AuthContextType {
   currentUser: User | null;
-  login: (employeeId: string) => void;
-  logout: () => void;
   isAuthenticated: boolean;
+  login: (employeeId: string) => boolean;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // 从localStorage加载认证状态
+  useEffect(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    const savedAuth = localStorage.getItem('isAuthenticated');
+    
+    if (savedUser && savedAuth === 'true') {
+      setCurrentUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const login = (employeeId: string): boolean => {
+    // 模拟用户数据
+    const defaultUser: User = {
+      id: '1',
+      name: '张三',
+      employeeId: 'EMP001',
+      position: '风险分析师',
+      department: 'Risk Management',
+      role: 'Inputter',
+      email: 'zhangsan@company.com',
+      phone: '13800138001',
+      isActive: true,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z'
+    };
+
+    // 根据员工ID设置不同的用户
+    let user: User;
+    switch (employeeId) {
+      case 'EMP001':
+        user = defaultUser;
+        break;
+      case 'EMP002':
+        user = {
+          ...defaultUser,
+          id: '2',
+          name: '李四',
+          employeeId: 'EMP002',
+          position: '风险经理',
+          role: 'Approver',
+          email: 'lisi@company.com',
+          phone: '13800138002'
+        };
+        break;
+      case 'EMP003':
+        user = {
+          ...defaultUser,
+          id: '3',
+          name: '王五',
+          employeeId: 'EMP003',
+          position: '风险管理总监',
+          role: 'Administrator',
+          email: 'wangwu@company.com',
+          phone: '13800138003'
+        };
+        break;
+      default:
+        return false;
+    }
+
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    
+    // 保存到localStorage
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('isAuthenticated', 'true');
+    
+    return true;
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    
+    // 清除localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('isAuthenticated');
+  };
+
+  return (
+    <AuthContext.Provider value={{ currentUser, isAuthenticated, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -17,73 +111,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    // 从localStorage恢复用户状态
-    const savedUser = localStorage.getItem('led_current_user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // 从localStorage恢复认证状态
-    return localStorage.getItem('led_is_authenticated') === 'true';
-  });
-
-  // 当用户状态改变时，保存到localStorage
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('led_current_user', JSON.stringify(currentUser));
-      localStorage.setItem('led_is_authenticated', 'true');
-    } else {
-      localStorage.removeItem('led_current_user');
-      localStorage.setItem('led_is_authenticated', 'false');
-    }
-  }, [currentUser]);
-
-  const login = (employeeId: string) => {
-    const user = mockUsers.find(u => u.employeeId === employeeId);
-    if (user) {
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-    } else {
-      // 如果找不到用户，创建一个默认的Inputter用户
-      const defaultUser = {
-        id: 'default',
-        name: '默认用户',
-        employeeId,
-        position: '风险分析师',
-        department: 'Risk Management',
-        role: 'Inputter' as const
-      };
-      setCurrentUser(defaultUser);
-      setIsAuthenticated(true);
-    }
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    // 清除localStorage
-    localStorage.removeItem('led_current_user');
-    localStorage.setItem('led_is_authenticated', 'false');
-  };
-
-  const value: AuthContextType = {
-    currentUser,
-    login,
-    logout,
-    isAuthenticated,
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
 }; 
